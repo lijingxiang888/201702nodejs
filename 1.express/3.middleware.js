@@ -31,3 +31,32 @@ app.get('/signin',function(req,res){
 });
 // post put delete options head
 app.listen(8080);
+
+
+
+
+let express = require('express');// express是一个函数
+//调用此函数再返回一个函数 app就是监听函数
+let app = express();
+//app.use表示使用一个中间件
+app.use(function(req,res,next){
+    //中间件来编写公用的逻辑
+    res.out = function(data,charset){
+        res.setHeader('Content-Type','text/html;charset='+(charset||'utf-8'));
+        res.end(data);
+    };
+    //表示继续执行下一个中间件或者路由
+    next();
+});
+
+app.use(function(req,res,next){ //把next()也提取出来
+    next();
+});
+//当客户端以GET方法访问/signup路径的时候会调用后面的监听函数进行响应
+app.get('/signup',function(req,res){
+    res.out('注册'); //只传返回数据也可以，参数2默认设置的是'utf-8'
+});
+app.get('/signin',function(req,res){
+    res.out('登录','utf-8');
+});
+app.listen(8080);

@@ -37,5 +37,4 @@ app.use(function(err,req,res,next){
     console.log('错误处理 ',req.money);
     res.end('error handler ');
 });
-
 app.listen(8080);

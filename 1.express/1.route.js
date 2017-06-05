@@ -24,4 +24,6 @@ http.createServer(function(req,res){
   }else{
       res.end('页面未找到');
   }
-}).listen(8080);
+}).listen(8080,function () {
+    console.log('监听8080');
+});

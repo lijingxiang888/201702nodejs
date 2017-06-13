@@ -26,7 +26,7 @@ app.use(session({
     })
 }));
 app.get('/user/signin', function (req, res) {
-    res.render('signin', {title: '登录'});
+    res.render('signin', {title: '登录'}); //相对路径，相对于模板的根目录
 });
 app.post('/user/signin', function (req, res) {
     let user = req.body;

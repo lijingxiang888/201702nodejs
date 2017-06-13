@@ -5,11 +5,12 @@ http.createServer(function(req,res){
     let urlObj = url.parse(req.url,true);
     let {pathname} = urlObj;
     if(pathname == '/visit'){
-        // name=zfpx; age=9; visit=1
-        // name=zfpx&age-9&visit=1
+        // 请求头里的cookie是这种形式：name=zfpx&age-9&visit=1
+        // 我们想要得到对象形式便于操作：name=zfpx; age=9; visit=1
         //先取出请求头中的cookie字段
         let cookie = req.headers.cookie;
-        //把字符串符转成对象
+        //querystring 将url上带的查询参数转成数组对象形式
+        //也可以直接用做字符串转化为对象形式这一功能，将cookie转换为对象形式且用 ;+空格分隔
         let cookieObj = querystring.parse(cookie,'; ');
         // cookieObj {name:zfpx,age:9,visit:1}
         //取出老的visit值

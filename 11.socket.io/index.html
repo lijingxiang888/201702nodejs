@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.css">
+    <style>
+        .user{
+            color:blue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>欢迎来到珠峰聊天室</h3>
+                    <p>
+                        <button class="btn btn-danger" onclick="join('red')">红房间</button>
+                        <button class="btn btn-success" onclick="join('green')">绿房间</button>
+                        <span id="currentRoom"></span>
+                    </p>
+                </div>
+                <div class="panel-body">
+                    <ul onclick="handleClick(event)" class="list-group" id="messages">
+
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    <form onsubmit="handleSubmit(event)">
+                        <div class="form-group">
+                            <label for="content">内容</label>
+                            <input type="text" class="form-control" id="content" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  //socket.io脚本会向 window上挂一个io的属性,调用此方法可以返回一个socket连接
+  let socket = io('/');
+  //当客户端连接服务器成功后会执行对应的回调函数
+  socket.on('connect',function(){
+      console.log('连接成功');
+      //当连接成功后向服务器发送一个getAllMessages事件
+      socket.emit('getAllMessages');
+  });
+  function format(msgObj){
+      return `<span class="user">${msgObj.username}</span>:${msgObj.content} <button data-type="deleteBtn" data-id="${msgObj._id}" class="btn btn-danger btn-xs">X</button> <span class="pull-right">${msgObj.createAt}</span>`;
+  }
+  socket.on('allMessages',function(messages){
+      let html = messages.map(message=>`<li class="list-group-item" id="${message._id}" >${format(message)}</li>`).join('');
+      messagesUl.innerHTML = html;
+  });
+  let messagesUl = document.querySelector('#messages');
+  //监听到服务器发过来的消息后会执行对应的回调函数
+  socket.on('message',function(msgObj){
+     let li = document.createElement('li');
+     li.innerHTML = format(msgObj);
+     li.className = 'list-group-item';
+     li.id = msgObj._id;
+     messagesUl.appendChild(li);
+  });
+  let contentInput = document.querySelector('#content');
+  function handleSubmit(event){
+    event.preventDefault();
+      //先获取输入框的内容
+    let content = contentInput.value;
+    //向后台socket.io服务器发送消息
+    socket.send(content);//socket.emit('message',content);
+    contentInput.value = '';
+  }
+
+  function handleClick(event){
+    if(event.target.className.toLowerCase() == 'user'){
+        let username = event.target.innerText;
+        contentInput.value = `@${username} `;
+    // data-type="1" data-id ="2"  => {type:1,id:2}
+    }else if(event.target.dataset.type == 'deleteBtn'){
+        socket.emit('delete',event.target.dataset.id);
+    }
+  }
+  //让此客户端在服务器对应的socket对应进入到某个房间内
+  function join(roomName){
+    socket.emit('join',roomName);
+    document.querySelector('#currentRoom').innerHTML = (roomName=='red'?'红房间':'绿房间')
+  }
+  socket.on('deleted',function(id){
+      //通过ID可以拿到对应的LI
+      let ele = document.getElementById(id);
+      ele.parentNode.removeChild(ele);
+  });
+</script>
+</body>
+</html>

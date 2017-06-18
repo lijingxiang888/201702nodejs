@@ -10,3 +10,5 @@ gulp.task('copy',function(){
         .pipe(gulp.dest('./build'));
     //dest 里参数是目录名
 });
+
+
